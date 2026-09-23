@@ -1,0 +1,5 @@
+# Ignorar datasets y matrices de caracteristicas pesadas
+*.json
+*.npz
+
+# Excepciones (si tienes algun JSON de configuracion pequeño, agregalo aqui)

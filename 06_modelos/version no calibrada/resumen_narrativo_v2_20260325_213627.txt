@@ -1,0 +1,114 @@
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║  REPORTE NARRATIVO v2 — BUROCRACIA DEL DOLOR EN SALUD PÚBLICA MX        ║
+║  Modelo: ComplementNB calibrado  |  Validación: 10-fold StratifiedKFold   ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+HALLAZGO PRINCIPAL
+──────────────────
+El análisis de minería de opinión mediante Complement Naive Bayes revela
+que el declive hospitalario en México no se expresa solo en términos
+médicos, sino en un lenguaje de 'burocracia del dolor'.
+
+Los términos con mayor peso predictivo para relevancia alta fueron:
+  1. "[NUM 776]"
+  2. "[NUM 777]"
+  3. "[NUM 768]"
+
+Esto confirma que el ciudadano percibe la ineficiencia principalmente
+a través de otro y la negligencia e irregularidades institucionales
+con relación a la influenza.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+① VALIDACIÓN CRUZADA — ESTABILIDAD DEL MODELO (10-fold estratificado)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  F1 weighted     : 0.8971 ± 0.0043  (IC 95%)
+  AUC-ROC         : 0.9529 ± 0.0043
+  F1 clase alta   : 0.7996 ± 0.0081
+  Desviación std  : 0.0069
+  Veredicto       : muy estable (σ < 2%)
+  Overfitting     : ✅ no detectado
+  Curva aprend.   : equilibrado — modelo estable
+
+  Valores por fold: [0.9003, 0.9007, 0.8941, 0.8874, 0.9105, 0.8914, 0.8894, 0.8966, 0.895, 0.9057]
+
+  Interpretación: Un F1 de 89.71% con IC [0.8928,
+  0.9014] significa que en el 95% de posibles
+  muestras del mismo corpus, el modelo se comportaría dentro de ese rango.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+② CALIBRACIÓN DE PROBABILIDADES (isotonic)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Brier Score sin calibrar : 0.08001  (menor = mejor)
+  Brier Score calibrado    : 0.06915  (mejora: +13.6%)
+  F1 weighted calibrado    : 0.9068
+  Interpretación           : mejorada — usar probabilidades calibradas para inferencia
+
+  La calibración permite afirmar: "este comentario tiene X% de probabilidad
+  de representar una queja de ineficiencia clínicamente relevante",
+  con X siendo una probabilidad real y no inflada por la independencia
+  condicional asumida por Naive Bayes.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+③ ANÁLISIS DE ERRORES CRÍTICOS (umbral confianza ≥ 0.8)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Falsos Negativos confiados : 117  ← quejas reales ignoradas
+  Falsos Positivos confiados : 22  ← falsas alarmas
+
+  Top 5 FN más confiados (el modelo estaba seguro pero se equivocó):
+  1. [98% confianza errónea] '...'
+     → posible FN por texto muy corto: insuficiente señal léxica
+  2. [97% confianza errónea] '...'
+     → posible FN por texto muy corto: insuficiente señal léxica
+  3. [97% confianza errónea] '...'
+     → posible FN por texto muy corto: insuficiente señal léxica
+  4. [96% confianza errónea] '...'
+     → posible FN por texto muy corto: insuficiente señal léxica
+  5. [96% confianza errónea] '...'
+     → posible FN por texto muy corto: insuficiente señal léxica
+
+  Recomendaciones accionables:
+  · ACCIÓN FN: Bajar MIN_CHARS a 20 en limpiar_dataset_v3.py para conservar comentarios cortos con alta carga semántica.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+④ COMPARACIÓN DE MODELOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Modelo                    F1-W   F1-Alta     AUC      Acc
+  ────────────────────────────────────────────────────────
+  LinearSVC               0.9014    0.7880  0.9478   0.9049
+  LogisticRegression      0.8864    0.7796  0.9508   0.8842
+  ComplementNB            0.7581    0.5645  0.8081   0.7469
+
+  → Mejor modelo: LinearSVC (F1=0.9014)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TOP TÉRMINOS PREDICTIVOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  RELEVANCIA ALTA:
+   1. [NUM_776]                      11.48589  [otro]  ████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
+   2. [NUM_777]                      10.86893  [otro]  ███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
+   3. [NUM_768]                      7.63919  [otro]  ██████████████████████████████████████████████████████████████████████████████████████████████████████████████████
+   4. corrupcion                     4.98188  [corrupcion_negligencia]  ██████████████████████████████████████████████████████████████████████████
+   5. saturado                       4.89794  [sistema_roto]  █████████████████████████████████████████████████████████████████████████
+   6. desabasto                      3.28284  [falta_insumos]  █████████████████████████████████████████████████
+   7. escasez                        3.08644  [falta_insumos]  ██████████████████████████████████████████████
+   8. morir                          2.56144  [consecuencia_clinica]  ██████████████████████████████████████
+   9. entidad_salud_imss             2.35271  [otro]  ███████████████████████████████████
+  10. solución                       2.28469  [consecuencia_clinica]  ██████████████████████████████████
+  11. [NUM_770]                      2.21267  [otro]  █████████████████████████████████
+  12. sistema_de_salud               2.19560  [otro]  ████████████████████████████████
+  13. esperar                        2.19191  [tiempo_espera]  ████████████████████████████████
+  14. maestría                       1.88108  [otro]  ████████████████████████████
+  15. espera                         1.65987  [tiempo_espera]  ████████████████████████
+
+  RELEVANCIA MEDIA:
+   1. corrupción                     5.13033  [otro]  ████████████████████████████████████████████████████████████████████████████
+   2. horrible                       2.50909  [otro]  █████████████████████████████████████
+   3. particular                     2.30079  [pago_privado]  ██████████████████████████████████
+   4. internado                      2.20722  [otro]  █████████████████████████████████
+   5. inútil                         1.89069  [otro]  ████████████████████████████
+   6. privado                        1.85874  [pago_privado]  ███████████████████████████
+   7. particularmente                1.84114  [pago_privado]  ███████████████████████████
+   8. desmadre                       1.80119  [otro]  ███████████████████████████
+   9. caro                           1.61294  [otro]  ████████████████████████
+  10. particulares                   1.52073  [pago_privado]  ██████████████████████

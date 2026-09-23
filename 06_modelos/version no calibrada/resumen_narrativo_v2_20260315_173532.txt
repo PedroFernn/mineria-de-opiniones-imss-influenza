@@ -1,0 +1,114 @@
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║  REPORTE NARRATIVO v2 — BUROCRACIA DEL DOLOR EN SALUD PÚBLICA MX        ║
+║  Modelo: ComplementNB calibrado  |  Validación: 10-fold StratifiedKFold   ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+HALLAZGO PRINCIPAL
+──────────────────
+El análisis de minería de opinión mediante Complement Naive Bayes revela
+que el declive hospitalario en México no se expresa solo en términos
+médicos, sino en un lenguaje de 'burocracia del dolor'.
+
+Los términos con mayor peso predictivo para relevancia alta fueron:
+  1. "[NUM 8]"
+  2. "[NUM 9]"
+  3. "[NUM 0]"
+
+Esto confirma que el ciudadano percibe la ineficiencia principalmente
+a través de otro y la falta de insumos
+con relación a la influenza.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+① VALIDACIÓN CRUZADA — ESTABILIDAD DEL MODELO (10-fold estratificado)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  F1 weighted     : 0.8716 ± 0.0136  (IC 95%)
+  AUC-ROC         : 0.9400 ± 0.0113
+  F1 clase alta   : 0.7840 ± 0.0241
+  Desviación std  : 0.0219
+  Veredicto       : estable (σ < 4%)
+  Overfitting     : ✅ no detectado
+  Curva aprend.   : equilibrado — modelo estable
+
+  Valores por fold: [0.8104, 0.8822, 0.8754, 0.8778, 0.8782, 0.889, 0.8915, 0.8641, 0.8796, 0.8676]
+
+  Interpretación: Un F1 de 87.16% con IC [0.8580,
+  0.8851] significa que en el 95% de posibles
+  muestras del mismo corpus, el modelo se comportaría dentro de ese rango.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+② CALIBRACIÓN DE PROBABILIDADES (isotonic)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Brier Score sin calibrar : 0.08984  (menor = mejor)
+  Brier Score calibrado    : 0.08848  (mejora: +1.5%)
+  F1 weighted calibrado    : 0.8691
+  Interpretación           : mejorada — usar probabilidades calibradas para inferencia
+
+  La calibración permite afirmar: "este comentario tiene X% de probabilidad
+  de representar una queja de ineficiencia clínicamente relevante",
+  con X siendo una probabilidad real y no inflada por la independencia
+  condicional asumida por Naive Bayes.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+③ ANÁLISIS DE ERRORES CRÍTICOS (umbral confianza ≥ 0.8)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Falsos Negativos confiados : 14  ← quejas reales ignoradas
+  Falsos Positivos confiados : 2  ← falsas alarmas
+
+  Top 5 FN más confiados (el modelo estaba seguro pero se equivocó):
+  1. [98% confianza errónea] '...'
+     → posible FN por texto muy corto: insuficiente señal léxica
+  2. [96% confianza errónea] '...'
+     → posible FN por texto muy corto: insuficiente señal léxica
+  3. [96% confianza errónea] '...'
+     → posible FN por texto muy corto: insuficiente señal léxica
+  4. [95% confianza errónea] '...'
+     → posible FN por texto muy corto: insuficiente señal léxica
+  5. [95% confianza errónea] '...'
+     → posible FN por texto muy corto: insuficiente señal léxica
+
+  Recomendaciones accionables:
+  · ACCIÓN FN: Bajar MIN_CHARS a 20 en limpiar_dataset_v3.py para conservar comentarios cortos con alta carga semántica.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+④ COMPARACIÓN DE MODELOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Modelo                    F1-W   F1-Alta     AUC      Acc
+  ────────────────────────────────────────────────────────
+  LinearSVC               0.8862    0.7927  0.9365   0.8902
+  LogisticRegression      0.8819    0.7973  0.9380   0.8825
+  ComplementNB            0.8245    0.7314  0.8938   0.8189
+
+  → Mejor modelo: LinearSVC (F1=0.8862)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TOP TÉRMINOS PREDICTIVOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  RELEVANCIA ALTA:
+   1. [NUM_8]                        4.73917  [otro]  ███████████████████████████████████████████████████████████████████████
+   2. [NUM_9]                        4.54116  [otro]  ████████████████████████████████████████████████████████████████████
+   3. [NUM_0]                        2.41752  [otro]  ████████████████████████████████████
+   4. corrupcion                     1.81570  [corrupcion_negligencia]  ███████████████████████████
+   5. no_hay                         1.79116  [falta_insumos]  ██████████████████████████
+   6. [NUM_2]                        1.75379  [otro]  ██████████████████████████
+   7. escasez                        1.49657  [falta_insumos]  ██████████████████████
+   8. malo                           1.35386  [otro]  ████████████████████
+   9. morir                          1.17694  [consecuencia_clinica]  █████████████████
+  10. pero                           1.15778  [otro]  █████████████████
+  11. [NUM_5]                        1.12562  [otro]  ████████████████
+  12. niños                          1.11217  [otro]  ████████████████
+  13. rato                           1.10388  [otro]  ████████████████
+  14. horas                          0.99643  [tiempo_espera]  ██████████████
+  15. vacunas no                     0.99641  [otro]  ██████████████
+
+  RELEVANCIA MEDIA:
+   1. [NUM_4]                        1.04843  [otro]  ███████████████
+   2. estás                          0.93426  [otro]  ██████████████
+   3. estuvieron                     0.76046  [otro]  ███████████
+   4. privado                        0.75701  [pago_privado]  ███████████
+   5. ido                            0.74637  [otro]  ███████████
+   6. mala                           0.73707  [otro]  ███████████
+   7. contacto                       0.71203  [otro]  ██████████
+   8. trate                          0.70269  [otro]  ██████████
+   9. feo                            0.68385  [otro]  ██████████
+  10. laboratorio                    0.65820  [otro]  █████████

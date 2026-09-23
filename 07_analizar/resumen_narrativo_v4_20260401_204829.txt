@@ -1,0 +1,113 @@
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║  REPORTE NARRATIVO v4 — BUROCRACIA DEL DOLOR EN SALUD PÚBLICA MX        ║
+║  VotingEnsemble (CNB + LR + LinearSVM) | 10-fold StratifiedKFold         ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+HALLAZGO PRINCIPAL
+──────────────────
+El análisis de minería de opinión revela que la ineficiencia del sector
+salud MX ante la influenza no se expresa solo en términos médicos, sino en
+un lenguaje de 'burocracia del dolor'. El ensamble de tres clasificadores
+(CNB + LR + LinearSVM, soft voting, pesos=[1, 2, 2]) captura esta señal
+mejor que cualquier clasificador individual.
+
+Términos con mayor peso predictivo para relevancia ALTA:
+  1. "[NUM 776]"
+  2. "[NUM 777]"
+  3. "[NUM 768]"
+
+Confirma que el ciudadano percibe la ineficiencia principalmente a través
+de otro y el tiempo de espera prolongado.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+① VALIDACIÓN CRUZADA — 10-fold estratificado (VotingEnsemble)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  F1 weighted     : 0.9037 ± 0.0034  (IC 95%)
+  AUC-ROC         : 0.9488 ± 0.0023
+  F1 clase alta   : 0.8035 ± 0.0066
+  Desv. estándar  : 0.0054
+  Veredicto       : muy estable (σ < 2%)
+  Overfitting     : ✅ no detectado
+  Curva aprend.   : equilibrado — modelo estable
+
+  Valores por fold: [0.9019, 0.8983, 0.8935, 0.9042, 0.9023, 0.903, 0.9128, 0.9051, 0.912, 0.9035]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+② PROBABILIDADES DEL ENSAMBLE (soft voting)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Brier Score ensamble : 0.07825  (menor = mejor calibración)
+  Log-Loss ensamble    : 0.25887
+  F1 weighted          : 0.8968
+  Nota: el soft voting ya promedía probabilidades calibradas de cada
+  sub-estimador — no se aplica calibración isotónica adicional.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+③ ERRORES CRÍTICOS del ensamble (umbral confianza ≥ 0.8)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Falsos Negativos confiados : 58  ← quejas reales ignoradas
+  Falsos Positivos confiados : 26  ← falsas alarmas
+
+  Recomendaciones accionables:
+  · ACCIÓN FN: Bajar MIN_CHARS para conservar comentarios cortos.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+④ ANÁLISIS DE DISCREPANCIAS — ZONA GRIS DE LA INEFICIENCIA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Comentarios con desacuerdo entre clasificadores individuales:
+    1027 de 3783 (27.2% del set de prueba)
+  
+  Tipos de desacuerdo detectados:
+    · 1-2 (alta-media)         : 673 comentarios
+    · 2-1 (alta-media)         : 354 comentarios
+
+  Resolución por el ensamble:
+    · Ensamble acertó (rescató discrepancia): 805
+    · Ensamble también falló (zona gris real): 222
+
+  Interpretación para la tesis:
+    Los 1027 comentarios con desacuerdo representan la 'zona gris'
+    de la ineficiencia sistémica: comentarios donde el vocabulario de queja
+    (peso CNB) no coincide con la señal semántica BERT (peso LR). Estos
+    casos límite son evidencia de la complejidad del discurso ciudadano
+    sobre el sistema de salud → exportados en discrepancias_*.csv y .json.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⑤ COMPARACIÓN DE MODELOS — TABLA COMPLETA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ────────────────────────────────────────────────────────────────────────────────────────────────────
+  TABLA COMPARATIVA — CLASE ALTA (ineficiencia detectada)
+  Prec↑ = Precision(alta) | Recall↑ = Recall(alta) | F1↑ = F1(alta)
+  ────────────────────────────────────────────────────────────────────────────────────────────────────
+  Modelo                   Prec↑  Recall↑     F1↑    F1-W     AUC     Acc  Rol
+  ────────────────────────────────────────────────────────────────────────────────────────────────────
+  LinearSVM               0.8668   0.7124  0.7821  0.8988  0.9465  0.9022 ★      
+  VotingEnsemble          0.7974   0.7811  0.7892  0.8968  0.9431  0.8972   [ENS]
+  LogisticRegression      0.7392   0.8273  0.7808  0.8876  0.9478  0.8855        
+  ComplementNB            0.4979   0.6481  0.5632  0.7621  0.8027  0.7523        
+  ────────────────────────────────────────────────────────────────────────────────────────────────────
+
+  → Mejor para detectar INEFICIENCIAS: LinearSVM
+     Precision=0.8668 | Recall=0.7124 | F1=0.7821
+     Un Recall alto indica que el modelo recupera la mayoría de quejas
+     reales — métrica prioritaria en salud pública (costo del FN alto).
+     [ENS] = VotingEnsemble | ★ = mejor modelo en esta ejecución
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TOP TÉRMINOS PREDICTIVOS (clase ALTA) — extraídos del sub-estimador LR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   1. [NUM_776]                      13.23322  [otro]  ██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
+   2. [NUM_777]                      12.11748  [otro]  █████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
+   3. [NUM_768]                      7.95315  [otro]  ███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
+   4. corrupcion                     5.76624  [corrupcion_negligencia]  ██████████████████████████████████████████████████████████████████████████████████████
+   5. saturado                       4.86460  [sistema_roto]  ████████████████████████████████████████████████████████████████████████
+   6. desabasto                      2.82887  [falta_insumos]  ██████████████████████████████████████████
+   7. esperar                        2.59177  [tiempo_espera]  ██████████████████████████████████████
+   8. escasez                        2.48094  [falta_insumos]  █████████████████████████████████████
+   9. espera                         2.44447  [tiempo_espera]  ████████████████████████████████████
+  10. solución                       2.36974  [consecuencia_clinica]  ███████████████████████████████████
+  11. sistema_de_salud               2.34173  [otro]  ███████████████████████████████████
+  12. horas                          2.23338  [tiempo_espera]  █████████████████████████████████
+  13. entidad_salud_imss             2.18673  [otro]  ████████████████████████████████
+  14. [NUM_770]                      2.06040  [otro]  ██████████████████████████████
+  15. no funciona                    2.02744  [otro]  ██████████████████████████████

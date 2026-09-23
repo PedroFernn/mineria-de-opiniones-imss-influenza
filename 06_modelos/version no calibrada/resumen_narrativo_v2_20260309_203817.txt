@@ -1,0 +1,114 @@
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║  REPORTE NARRATIVO v2 — BUROCRACIA DEL DOLOR EN SALUD PÚBLICA MX        ║
+║  Modelo: ComplementNB calibrado  |  Validación: 10-fold StratifiedKFold   ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+HALLAZGO PRINCIPAL
+──────────────────
+El análisis de minería de opinión mediante Complement Naive Bayes revela
+que el declive hospitalario en México no se expresa solo en términos
+médicos, sino en un lenguaje de 'burocracia del dolor'.
+
+Los términos con mayor peso predictivo para relevancia alta fueron:
+  1. "por"
+  2. "pero"
+  3. "porque"
+
+Esto confirma que el ciudadano percibe la ineficiencia principalmente
+a través de otro y el tiempo de espera prolongado
+con relación a la influenza.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+① VALIDACIÓN CRUZADA — ESTABILIDAD DEL MODELO (10-fold estratificado)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  F1 weighted     : 0.7478 ± 0.0166  (IC 95%)
+  AUC-ROC         : 0.7975 ± 0.0164
+  F1 clase alta   : 0.5915 ± 0.0255
+  Desviación std  : 0.0268
+  Veredicto       : estable (σ < 4%)
+  Overfitting     : ⚠️  detectado (gap train-test > 10%)
+  Curva aprend.   : overfitting moderado — reducir vocabulario o aumentar alpha
+
+  Valores por fold: [0.7019, 0.7598, 0.7481, 0.7744, 0.7309, 0.7794, 0.7446, 0.769, 0.7021, 0.7678]
+
+  Interpretación: Un F1 de 74.78% con IC [0.7312,
+  0.7644] significa que en el 95% de posibles
+  muestras del mismo corpus, el modelo se comportaría dentro de ese rango.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+② CALIBRACIÓN DE PROBABILIDADES (isotonic)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Brier Score sin calibrar : 0.20595  (menor = mejor)
+  Brier Score calibrado    : 0.15685  (mejora: +23.8%)
+  F1 weighted calibrado    : 0.7417
+  Interpretación           : mejorada — usar probabilidades calibradas para inferencia
+
+  La calibración permite afirmar: "este comentario tiene X% de probabilidad
+  de representar una queja de ineficiencia clínicamente relevante",
+  con X siendo una probabilidad real y no inflada por la independencia
+  condicional asumida por Naive Bayes.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+③ ANÁLISIS DE ERRORES CRÍTICOS (umbral confianza ≥ 0.8)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Falsos Negativos confiados : 16  ← quejas reales ignoradas
+  Falsos Positivos confiados : 2  ← falsas alarmas
+
+  Top 5 FN más confiados (el modelo estaba seguro pero se equivocó):
+  1. [96% confianza errónea] '...'
+     → posible FN por texto muy corto: insuficiente señal léxica
+  2. [92% confianza errónea] '...'
+     → posible FN por texto muy corto: insuficiente señal léxica
+  3. [92% confianza errónea] '...'
+     → posible FN por texto muy corto: insuficiente señal léxica
+  4. [91% confianza errónea] '...'
+     → posible FN por texto muy corto: insuficiente señal léxica
+  5. [90% confianza errónea] '...'
+     → posible FN por texto muy corto: insuficiente señal léxica
+
+  Recomendaciones accionables:
+  · ACCIÓN FN: Bajar MIN_CHARS a 20 en limpiar_dataset_v3.py para conservar comentarios cortos con alta carga semántica.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+④ COMPARACIÓN DE MODELOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Modelo                    F1-W   F1-Alta     AUC      Acc
+  ────────────────────────────────────────────────────────
+  LogisticRegression      0.8247    0.6783  0.8657   0.8227
+  LinearSVC               0.7869    0.5446  0.8576   0.8035
+  ComplementNB            0.7286    0.5647  0.7844   0.7148
+
+  → Mejor modelo: LogisticRegression (F1=0.8247)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TOP TÉRMINOS PREDICTIVOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  RELEVANCIA ALTA:
+   1. por                            -4.13641  [otro]  
+   2. pero                           -4.62993  [otro]  
+   3. porque                         -5.04336  [otro]  
+   4. gente                          -5.35133  [otro]  
+   5. cosas                          -5.45329  [otro]  
+   6. pues                           -5.66461  [otro]  
+   7. tiempo                         -5.67727  [otro]  
+   8. sin                            -5.68232  [otro]  
+   9. vida                           -5.68402  [otro]  
+  10. personas                       -5.70621  [otro]  
+  11. tienes                         -5.71214  [otro]  
+  12. años                           -5.74937  [otro]  
+  13. gobierno                       -5.82700  [otro]  
+  14. país                           -5.84863  [otro]  
+  15. salud                          -5.87629  [otro]  
+
+  RELEVANCIA MEDIA:
+   1. por                            -4.64263  [otro]  
+   2. pero                           -5.02208  [otro]  
+   3. porque                         -5.25428  [otro]  
+   4. gente                          -5.72321  [otro]  
+   5. cosas                          -5.76095  [otro]  
+   6. hospital                       -5.90287  [otro]  
+   7. tienes                         -5.90585  [otro]  
+   8. casos                          -5.92032  [otro]  
+   9. médicos                        -5.97336  [otro]  
+  10. gobierno                       -6.00419  [otro]  
